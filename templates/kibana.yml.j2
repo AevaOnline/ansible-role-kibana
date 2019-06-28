@@ -43,9 +43,9 @@ elasticsearch.hosts: "{{ kibana_elasticsearch_url }}"
 # the username and password that the Kibana server uses to perform maintenance on the Kibana
 # index at startup. Your Kibana users still need to authenticate with Elasticsearch, which
 # is proxied through the Kibana server.
-{% if kibana_es_username and kibana_es_password %}
-elasticsearch.username: "{{ kibana_es_username }}"
-elasticsearch.password: "{{ kibana_es_password }}"
+{% if kibana_elasticsearch_username and kibana_elasticsearch_password %}
+elasticsearch.username: "{{ kibana_elasticsearch_username }}"
+elasticsearch.password: "{{ kibana_elasticsearch_password }}"
 {% else %}
 #elasticsearch.username: "user"
 #elasticsearch.password: "pass"
@@ -56,28 +56,23 @@ elasticsearch.password: "{{ kibana_es_password }}"
 
 {% if kibana_enable_ssl | bool %}
 server.ssl.enabled: true
-server.ssl.certificate: "{{ kibana_ssl_cert | default('/etc/pki/kibana.crt') }}"
-server.ssl.key: "{{ kibana_ssl_key | default('/etc/pki/kibana.crt') }}"
+server.ssl.certificate: "{{ kibana_ssl_dir }}/{{ kibana_ssl_certificate_file | basename }}"
+server.ssl.key: "{{ kibana_ssl_dir }}/{{ kibana_ssl_key_file | basename }}"
 {% else %}
-#server.ssl.enabled: false
+server.ssl.enabled: false
 #server.ssl.certificate: /path/to/your/server.crt
 #server.ssl.key: /path/to/your/server.key
 {% endif %}
 
 # Optional settings that provide the paths to the PEM-format SSL certificate and key files.
 # These files validate that your Elasticsearch backend uses the same key files.
-{% if kibana_es_uses_ssl | bool %}
-elasticsearch.ssl.certificate: "{{ kibana_es_ssl_cert | default('/etc/pki/elasticsearch.crt') }}"
-elasticsearch.ssl.key: "{{ kibana_es_ssl_key | default('/etc/pki/elasticsearch.key') }}"
-{% else %}
 #elasticsearch.ssl.certificate: /path/to/your/client.crt
 #elasticsearch.ssl.key: /path/to/your/client.key
-{% endif %}
 
 # Optional setting that enables you to specify a path to the PEM file for the certificate
 # authority for your Elasticsearch instance.
-{% if kibana_ssl_ca | bool %}
-elasticsearch.ssl.certificateAuthorities: [ "{{ kibana_ssl_ca }}" ]
+{% if kibana_cafile.stat.exists|bool and kibana_cafile.stat.isreg|bool %}
+elasticsearch.ssl.certificateAuthorities: [ "{{ kibana_ssl_dir }}/{{ kibana_ssl_certificate_authority | basename }}" ]
 {% else %}
 #elasticsearch.ssl.certificateAuthorities: [ "/path/to/your/CA.pem" ]
 {% endif %}
